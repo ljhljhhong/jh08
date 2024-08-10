@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>햄버거하우스 게임</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #box {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            border: 5px solid #007BFF;
+            width: 320px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .cellBox {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100px;
+            height: 100px;
+            border: 1px solid #ddd;
+            overflow: hidden;
+        }
+        .cellBox ul {
+            position: absolute;
+            top: 0;
+            left: 0;
+            padding: 0;
+            margin: 0;
+            list-style: none;
+            transition: top 0.3s ease;
+        }
+        .cellBox ul li {
+            width: 100px;
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-bottom: 1px solid #ddd;
+            background-color: #fff;
+            color: #333;
+            font-size: 24px;
+            box-sizing: border-box;
+        }
+        #messageBox {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border: 2px solid #007BFF;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        #messageBox p {
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>햄버거하우스 게임</h1>
+    <button id="startBtn">START</button><button id="stopBtn">STOP</button>
+    <div id="box"></div>
+    <div id="messageBox">
+        <p id="messageText"></p>
+        <button id="continueBtn">CONTINUE</button><button id="quitBtn">QUIT</button>
+    </div>
+
+    <script>
+        function Box() { }
+        Box.prototype.init = function() {
+            this.cellBox = document.createElement("div");
+            this.elementUl = document.createElement("ul");
+            for(var i=0; i<10; i++) {
+                this.elementLi = document.createElement("li");
+                this.elementLi.innerText = i;
+                this.elementUl.appendChild(this.elementLi);
+            }
+            this.cellBox.appendChild(this.elementUl);
+            this.cellBox.setAttribute("class", "cellBox");
+            return this.cellBox;
+        }
+        Box.prototype.start = function(speed) {
+            this.y = 0;
+            this.intervalRef = setInterval(() => {
+                this.y -= 10;
+                this.elementUl.style.top = this.y + "px";
+                if(this.y <= -900) {
+                    this.y = 0;
+                }
+            }, speed);
+        }
+        Box.prototype.stop = function() {
+            clearInterval(this.intervalRef);
+            this.elementUl.style.top = Math.floor(this.y / 100) * 100 + "px";
+        }
+        Box.prototype.getFinalNumber = function() {
+            return Math.abs(this.y % 1000) / 100;
+        }
+
+        const divBox = document.querySelector("#box");
+        const messageBox = document.querySelector("#messageBox");
+        const messageText = document.querySelector("#messageText");
+        const continueBtn = document.querySelector("#continueBtn");
+        const quitBtn = document.querySelector("#quitBtn");
+        const startBtn = document.querySelector("#startBtn");
+        const stopBtn = document.querySelector("#stopBtn");
+        const boxArr = [];
+
+        for (var i = 0; i < 9; i++) {
+            boxArr.push(new Box());
+            const newBox = boxArr[i].init();
+            divBox.appendChild(newBox);
+        }
+
+        function checkGameResult() {
+            const finalNumbers = boxArr.map(box => box.getFinalNumber());
+            const isAllSame = finalNumbers.every(num => num === finalNumbers[0]);
+            if (isAllSame) {
+                alert('축하드립니다! 다 맞추셨습니다!');
+            } else {
+                showMessage('실패하셨습니다. 다시하시겠습니까?');
+            }
+        }
+
+        function showMessage(message) {
+            messageText.innerText = message;
+            messageBox.style.display = 'block';
+        }
+
+        function hideMessage() {
+            messageBox.style.display = 'none';
+        }
+
+        function restartGame() {
+            boxArr.forEach(function (box) {
+                box.start(Math.floor(5 + Math.random() * 20));
+            });
+        }
+
+        startBtn.addEventListener('click', function () {
+            boxArr.forEach(function (box) {
+                box.start(Math.floor(5 + Math.random() * 20));
+            });
+        });
+
+        stopBtn.addEventListener('click', function () {
+            boxArr.forEach(function (box) {
+                box.stop();
+            });
+            checkGameResult();
+        });
+
+        continueBtn.addEventListener('click', function () {
+            hideMessage();
+            restartGame();
+        });
+
+        quitBtn.addEventListener('click', function () {
+            hideMessage();
+            alert('Thank you for playing!');
+        });
+    </script>
+</body>
+</html>
